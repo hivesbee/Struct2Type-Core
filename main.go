@@ -11,17 +11,20 @@ import (
 	"go/token"
 )
 
+// TypeField is struct
 type TypeField struct {
 	FieldName string
 	FieldType string
 	FieldTag  string
 }
 
+// StructVisitor is struct
 type StructVisitor struct {
 	name   string
 	fields []TypeField
 }
 
+// Visit is func
 func (v *StructVisitor) Visit(node ast.Node) ast.Visitor {
 	if node == nil {
 		return v
@@ -49,8 +52,6 @@ func extractFields(fields []*ast.Field) []TypeField {
 		}
 	}
 
-	fmt.Println(extractFields)
-
 	return extractFields
 }
 
@@ -61,19 +62,16 @@ func extractField(field *ast.Field) (TypeField, bool) {
 
 	// fieldName
 	fieldName := field.Names[0].Name
-	fmt.Println(fieldName)
 
 	// fieldType
 	var b bytes.Buffer
 	format.Node(&b, token.NewFileSet(), field.Type)
 	fieldType := b.String()
-	fmt.Println(fieldType)
 
 	// fieldTag
 	var bb bytes.Buffer
 	format.Node(&bb, token.NewFileSet(), field.Tag)
 	fieldTag := bb.String()
-	fmt.Println(fieldTag)
 
 	return TypeField{
 		FieldName: fieldName,
@@ -87,16 +85,15 @@ func main() {
 		package Sample
 
 		type Test struct {
-			Id        Hoge.Fuga     'json:"id"'
-			Name      string     'json:"name"'
-			CreatedAt *time.Time
+			Id         Hoge.Fuga  'json:"id"'
+			Name       string     'json:"name"'
+			CreatedAt  *time.Time 'json:"createdAt"'
+			UserStatus string
 		}
 	`
 
 	source = strings.Replace(source, "'", "`", -1)
-
 	fset := token.NewFileSet()
-
 	f, err := parser.ParseFile(fset, "", source, 0)
 	if err != nil {
 		fmt.Println(err)
@@ -109,18 +106,4 @@ func main() {
 
 	fmt.Println(visitor.name)
 	fmt.Println(visitor.fields)
-
-	// ast.Inspect(f, func(n ast.Node) bool {
-	// 	var s string
-	// 	switch x := n.(type) {
-	// 	case *ast.BasicLit:
-	// 		s = x.Value
-	// 	case *ast.Ident:
-	// 		s = x.Name
-	// 	}
-	// 	if s != "" {
-	// 		fmt.Printf("%s:\t%s\n", fset.Position(n.Pos()), s)
-	// 	}
-	// 	return true
-	// })
 }
